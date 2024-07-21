@@ -126,6 +126,8 @@ export class Board extends LitElement {
         (spec) =>
           html`<pinnable-renderer
             class="pinnable"
+            id=${spec.id}
+            style="${this._transformToStyles(spec)}"
             .spec=${spec}
             @click=${() => this.editPinnableSpec(spec)}
           ></pinnable-renderer>`
@@ -133,6 +135,18 @@ export class Board extends LitElement {
       <button @click=${() => this.addPinnableSpec()}>Add new pinnable</button>
       <button @click=${() => this.storage.reset()}>Clear localStorage</button>
     `;
+  }
+
+  private _transformToStyles(spec: PinnableSpec) {
+    let style = "";
+    if (spec.transform.x || spec.transform.y) {
+      style += `
+        position: absolute;
+        left: ${spec.transform.x ?? 0}px;
+        top: ${spec.transform.y ?? 0}px;
+      `;
+    }
+    return style;
   }
 
   editPinnableSpec(spec: PinnableSpec) {
