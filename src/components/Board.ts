@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { Kind, Spec } from "./pinnables/PinnableRenderer";
+import { PinnableKind, PinnableSpec } from "./pinnables";
 
 @customElement("the-board")
 export class Board extends LitElement {
@@ -14,36 +14,36 @@ export class Board extends LitElement {
   `;
 
   @property()
-  pinnables: Spec[] = [
+  pinnables: PinnableSpec[] = [
     {
-      kind: Kind.DEFAULT,
+      kind: PinnableKind.DEFAULT,
       transform: { w: 300, h: 300 },
       html: `<div>
         <marquee><em>he</em>llo
       </div>`,
     },
     {
-      kind: Kind.DEFAULT,
+      kind: PinnableKind.DEFAULT,
       transform: { w: 200, h: 350 },
       html: `oh no`,
     },
     {
-      kind: Kind.DEFAULT,
+      kind: PinnableKind.DEFAULT,
       transform: { w: 100, h: 500 },
       html: `oh no`,
     },
     {
-      kind: Kind.DEFAULT,
+      kind: PinnableKind.DEFAULT,
       transform: { w: 300, h: 300 },
       html: `oh no`,
     },
     {
-      kind: Kind.DEFAULT,
+      kind: PinnableKind.DEFAULT,
       transform: { w: 500, h: 300 },
       html: `oh no`,
     },
     {
-      kind: Kind.DEFAULT,
+      kind: PinnableKind.DEFAULT,
       transform: { w: 300, h: 300 },
       html: `oh no`,
     },
@@ -51,6 +51,9 @@ export class Board extends LitElement {
 
   render() {
     return html`
+      <pinnable-editor
+        style="margin: 100px 100px; height: 520px"
+      ></pinnable-editor>
       ${this.pinnables.map(
         (spec) => html`<pinnable-renderer .spec=${spec}></pinnable-renderer>`
       )}
