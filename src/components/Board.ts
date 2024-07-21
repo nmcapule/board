@@ -3,6 +3,32 @@ import { customElement, query, state } from "lit/decorators.js";
 
 import { PinnableKind, PinnableSpec } from "./pinnables";
 
+export class BoardPersistenceService {
+  constructor(public readonly key: string) {}
+
+  save(specs: PinnableSpec[]) {
+    console.debug(`Saving pinnable specs from key ${this.key}`, specs);
+    localStorage.setItem(this.key, JSON.stringify(specs));
+  }
+
+  load(): PinnableSpec[] {
+    try {
+      const item = localStorage.getItem(this.key);
+      if (!item) {
+        throw new Error(`missing key for key ${this.key}`);
+      }
+      return JSON.parse(item);
+    } catch (e) {
+      console.error(`Error loading saved pinnable specs from key: ${this.key}`);
+    }
+    return null;
+  }
+
+  reset() {
+    localStorage.clear();
+  }
+}
+
 @customElement("the-board")
 export class Board extends LitElement {
   static styles = css`
@@ -35,47 +61,56 @@ export class Board extends LitElement {
   @state()
   specs: PinnableSpec[] = [
     {
-      id: "1",
+      id: "default",
       kind: PinnableKind.DEFAULT,
-      transform: { w: 300, h: 300 },
-      html: `<div>
-        <marquee><em>he</em>llo
-      </div>`,
-    },
-    {
-      id: "2",
-      kind: PinnableKind.DEFAULT,
-      transform: { w: 200, h: 350 },
-      html: `oh no`,
-    },
-    {
-      id: "3",
-      kind: PinnableKind.DEFAULT,
-      transform: { w: 100, h: 500 },
-      html: `oh no`,
-    },
-    {
-      id: "4",
-      kind: PinnableKind.DEFAULT,
-      transform: { w: 300, h: 300 },
-      html: `oh no`,
-    },
-    {
-      id: "5",
-      kind: PinnableKind.DEFAULT,
-      transform: { w: 500, h: 300 },
-      html: `oh no`,
-    },
-    {
-      id: "6",
-      kind: PinnableKind.DEFAULT,
-      transform: { w: 300, h: 300 },
-      html: `oh no`,
+      transform: { w: 460, h: 600 },
+      html: `
+      <h1>Welcome a-board!</h1>
+      <ul>
+        <li>Click <code>Add new pinnable</code> to create pinnable
+        <li>Click on a pinnable to edit
+        <li><b>When editing</b>: <code>Ctrl+s</code> to save
+        <li><b>When editing</b>: <code>Ctrl+d</code> to delete
+      </ul>
+      <pre>
+        You can do more stuff here!
+        ░░░░░░░░░▄░░░░░░░░░░░░░░▄░░░░
+        ░░░░░░░░▌▒█░░░░░░░░░░░▄▀▒▌░░░
+        ░░░░░░░░▌▒▒█░░░░░░░░▄▀▒▒▒▐░░░
+        ░░░░░░░▐▄▀▒▒▀▀▀▀▄▄▄▀▒▒▒▒▒▐░░░
+        ░░░░░▄▄▀▒░▒▒▒▒▒▒▒▒▒█▒▒▄█▒▐░░░
+        ░░░▄▀▒▒▒░░░▒▒▒░░░▒▒▒▀██▀▒▌░░░ 
+        ░░▐▒▒▒▄▄▒▒▒▒░░░▒▒▒▒▒▒▒▀▄▒▒▌░░
+        ░░▌░░▌█▀▒▒▒▒▒▄▀█▄▒▒▒▒▒▒▒█▒▐░░
+        ░▐░░░▒▒▒▒▒▒▒▒▌██▀▒▒░░░▒▒▒▀▄▌░
+        ░▌░▒▄██▄▒▒▒▒▒▒▒▒▒░░░░░░▒▒▒▒▌░
+        ▐▒▀▐▄█▄█▌▄░▀▒▒░░░░░░░░░░▒▒▒▐░
+        ▐▒▒▐▀▐▀▒░▄▄▒▄▒▒▒▒▒▒░▒░▒░▒▒▒▒▌
+        ▐▒▒▒▀▀▄▄▒▒▒▄▒▒▒▒▒▒▒▒░▒░▒░▒▒▐░
+        ░▌▒▒▒▒▒▒▀▀▀▒▒▒▒▒▒░▒░▒░▒░▒▒▒▌░
+        ░▐▒▒▒▒▒▒▒▒▒▒▒▒▒▒░▒░▒░▒▒▄▒▒▐░░
+        ░░▀▄▒▒▒▒▒▒▒▒▒▒▒░▒░▒░▒▄▒▒▒▒▌░░
+        ░░░░▀▄▒▒▒▒▒▒▒▒▒▒▄▄▄▀▒▒▒▒▄▀░░░
+        ░░░░░░▀▄▄▄▄▄▄▀▀▀▒▒▒▒▒▄▄▀░░░░░
+        ░░░░░░░░░▒▒▒▒▒▒▒▒▒▒▀▀░░░░░░░░
+      </pre>
+      `,
+      styles: `
+        font-family: Google Sans, Verdana, Arial;
+        font-size: 16px;
+      `,
     },
   ];
 
   @state()
   editingSpecs: PinnableSpec;
+
+  private storage = new BoardPersistenceService("default");
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.specs = this.storage.load() ?? this.specs;
+  }
 
   render() {
     return html`
@@ -84,6 +119,7 @@ export class Board extends LitElement {
           .spec=${this.editingSpecs}
           style="width: 100%; height: 100%"
           @commit=${(ev) => this.commitPinnableSpec(ev.detail)}
+          @delete=${(ev) => this.deletePinnableSpec(ev.detail)}
         ></pinnable-editor>
       </dialog>
       ${this.specs.map(
@@ -94,6 +130,8 @@ export class Board extends LitElement {
             @click=${() => this.editPinnableSpec(spec)}
           ></pinnable-renderer>`
       )}
+      <button @click=${() => this.addPinnableSpec()}>Add new pinnable</button>
+      <button @click=${() => this.storage.reset()}>Clear localStorage</button>
     `;
   }
 
@@ -103,11 +141,34 @@ export class Board extends LitElement {
   }
 
   commitPinnableSpec(committedSpec: PinnableSpec) {
-    console.log(committedSpec);
     this.specs = this.specs.map((spec) => {
       if (spec.id === committedSpec.id) return committedSpec;
       return spec;
     });
+    this.storage.save(this.specs);
     this.editorDialog?.close();
+  }
+
+  deletePinnableSpec(deletedSpec: PinnableSpec) {
+    this.specs = this.specs.filter((spec) => spec.id !== deletedSpec.id);
+    this.storage.save(this.specs);
+    this.editorDialog?.close();
+  }
+
+  addPinnableSpec() {
+    const id = Math.random().toString(36);
+    const spec: PinnableSpec = {
+      id: id,
+      kind: PinnableKind.DEFAULT,
+      transform: {
+        w: 120,
+        h: 80,
+      },
+      html: `hello world ${id}`,
+      styles: "border: 1px dashed gray",
+    };
+    this.specs = this.specs.concat(spec);
+    this.storage.save(this.specs);
+    this.editPinnableSpec(spec);
   }
 }

@@ -114,6 +114,10 @@ export class PinnableEditor extends LitElement {
       this._commit();
       ev.preventDefault();
     }
+    if (ev.ctrlKey && ev.key === "d") {
+      this._delete();
+      ev.preventDefault();
+    }
   }
 
   private _updateSpecFromEditor() {
@@ -131,6 +135,16 @@ export class PinnableEditor extends LitElement {
     this.message = `Saved!`;
     this.dispatchEvent(
       new CustomEvent<PinnableSpec>("commit", {
+        detail: this.spec,
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _delete() {
+    this.dispatchEvent(
+      new CustomEvent<PinnableSpec>("delete", {
         detail: this.spec,
         bubbles: true,
         composed: true,
