@@ -3,6 +3,7 @@ export enum PinnableKind {
 }
 
 export interface PinnableSpec {
+  id: string;
   kind: PinnableKind;
   transform: {
     w: number; // width

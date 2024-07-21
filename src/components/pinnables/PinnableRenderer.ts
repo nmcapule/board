@@ -18,6 +18,9 @@ export class PinnableRenderer extends LitElement {
     }
   `;
 
+  @property({ type: Boolean })
+  debugMode = false;
+
   @property({ type: Object })
   spec?: PinnableSpec;
 
@@ -35,7 +38,7 @@ export class PinnableRenderer extends LitElement {
         @mouseenter=${(e) => (this.toggleSpec = true)}
         @mouseleave=${(e) => (this.toggleSpec = false)}
       >
-        ${this.toggleSpec
+        ${this.toggleSpec && this.debugMode
           ? html`<pre>${JSON.stringify(this.spec, null, 2)}</pre>`
           : unsafeHTML(this.spec?.html)}
       </div>
